@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -80,6 +81,13 @@ public class WordActivity extends AppCompatActivity {
         mWordEditButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (mWordEnglishVersion.getText().toString().isEmpty() ||
+                        mWordRussianVersion.getText().toString().isEmpty()) {
+                    Toast.makeText(WordActivity.this,
+                            "Слово и его перевод не должны быть пустыми",
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 if (mIsUpdating) {
                     mEditWord.setEnglishVersion(mWordEnglishVersion.getText().toString());
                     mEditWord.setRussianVersion(mWordRussianVersion.getText().toString());
@@ -137,7 +145,7 @@ public class WordActivity extends AppCompatActivity {
     }
 
     private void addTranslationOptions() {
-        String key = "dict.1.1.20200921T123913Z.fca49b68eae2ba94.b30a3d3f489cf5e0bb0ba4890dffa235af742997";
+        String key = "dict.1.1.20210329T185443Z.48373290204fd139.456a108770506cd1a3538eed592261f196b12e96";
         String url = "https://dictionary.yandex.net/api/v1/dicservice.json/lookup?key=" + key + "&lang=en-ru&text=" + mWordEnglishVersion.getText().toString();
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET,
                 url, null, new Response.Listener<JSONObject>() {
@@ -156,7 +164,13 @@ public class WordActivity extends AppCompatActivity {
                             String translation = array.getJSONObject(k).getString("text");
                             translations.add(translation);
                         }
+                        if (translations.size() > 6) {
+                            break;
+                        }
                     }
+
+                    if (translations.size() > 0) mTranslationsListView.setVisibility(View.VISIBLE);
+                    else mTranslationsListView.setVisibility(View.GONE);
 
                     ArrayAdapter<String> adapter = new ArrayAdapter(WordActivity.this,
                             android.R.layout.simple_list_item_1, translations);
